@@ -29,8 +29,12 @@ class GameClient:
 	# ===> Network
 	def RecieveNetData(self):
 		while True:
+			data = None
 			# Recv
-			data = self.net_client.Recv()
+			try:
+				data = self.net_client.Recv()
+			except:
+				self.logger.warn("Not recv data")
 
 			if data:
 				print("[SERVER]: " + data.decode())
@@ -97,4 +101,5 @@ class GameClient:
 			self.logger.log("Closing connection")
 		self.net_client.Close() # Closing socket
 		
+		pygame.quit()
 		sys.exit() # Выйди нахуй блять
