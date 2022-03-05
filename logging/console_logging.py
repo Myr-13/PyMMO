@@ -7,10 +7,10 @@ class ConsoleLogger(Logger):
 		super().__init__()
 
 	def log(self, text: str):
-		print("[{time}][LOG] - {text}".format(time = datetime.time.now(), text=text))
+		print("[{time}][LOG] - {text}".format(time = datetime.datetime.now(), text=text))
 	
 	def warning(self, text: str):
-		print("[{time}][WARNING] - {text}".format(time = datetime.time.now(), text=text))
+		print("[{time}][WARNING] - {text}".format(time = datetime.datetime.now(), text=text))
 	
 	def error(self, text: str):
-		print("[{time}][ERROR] - {text}".format(time = datetime.time.now(), text=text))
+		print("[{time}][ERROR] - {text}".format(time = datetime.datetime.now(), text=text))

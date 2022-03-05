@@ -1,34 +1,30 @@
 from logging.logging import Logger
 from logging.console_logging import ConsoleLogger
+
 from socket import socket
 import threading as th
 
+from server.netserver import NetServer
+
+BUFFER_SIZE = 1024
 
 class Server():
 	# For vscode
-	connections: list
-	addresses: list
-
 	is_running: bool
+	debug: bool
 
 	logger: Logger
+	netserver: NetServer
 
 	def __init__(self, debug = False):
-		self.socket = socket()
 		self.logger = ConsoleLogger()
+		self.netserver = NetServer(self.logger)
 		self.debug = debug
 
-		self.addresses = []
-		self.connections = []
-
-	def Run(self, port: int):
-		if self.socket:
-			self.logger.log("Starting server on port {0}".format(port))
+	def run(self, port: int):
 		self.is_running = True
 
-		self.socket.bind(("", port))
-		self.socket.listen(1)
-
+		self.netserver.start(port=port)
 		self.connections_loop_start()
 		self.main_loop_start()
 
@@ -38,19 +34,24 @@ class Server():
 
 	def main_loop(self):
 		while self.is_running:
-			for i in range(len(self.connections)):
+			for i in range(len(self.netserver.connections)):
 				try:
-					data = self.connections[i].recv(1024)
+					data = bytearray()
 
-					if not data:
-						continue
+					while True:
+						chunk = self.netserver.recive(i, BUFFER_SIZE)
+						if not chunk:
+							break
+						data += chunk
 					
-					string = data.decode()
-					print("From {address} resolved: {text}".format(address = self.addresses[i], text = string))
+					if not data or len(data) == 0:
+						continue
+
+					string = str(data, 'utf8')
+					print("From {address} resolved: {text}\nWith size: {size}".format(address = self.netserver.addresses[i], text = string, size = len(data)))
 				except:
 					try:
-						self.connections.pop(i)
-						self.addresses.pop(i)
+						self.netserver.kick(i)
 					except:
 						pass
 
@@ -62,9 +63,4 @@ class Server():
 
 	def connections_loop(self):
 		while self.is_running:
-			connection, address = self.socket.accept()
-
-			self.addresses.append(address)
-			self.connections.append(connection)
-
-			self.logger.log("New connections from: {}".format(address))
+			self.netserver.accept()
