@@ -7,7 +7,7 @@ import threading as th
 import sys
 
 class GameClient:
-	def __init__(self, debug = True, winmode = True):
+	def __init__(self, debug = True):
 		self.debug = debug
 		self.logger = ConsoleLogger()
 
@@ -26,9 +26,6 @@ class GameClient:
 
 	def OnTick(self):
 		self.OnRender()
-
-		# Fps lock
-		self.fpsclock.tick(self.fpslock)
 
 	def OnRender(self):
 		pass
