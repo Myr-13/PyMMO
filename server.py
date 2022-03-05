@@ -1,10 +1,11 @@
-from .logging.logging import Logger
-from .logging.console_logging import ConsoleLogger
+from logging.logging import Logger
+from logging.console_logging import ConsoleLogger
 from socket import socket
 import threading as th
 
 
 class Server():
+	# For vscode
 	connections: list
 	addresses: list
 
@@ -35,7 +36,7 @@ class Server():
 
 	def main_loop(self):
 		while self.is_running:
-			for i in len(self.connections):
+			for i in range(len(self.connections)):
 				try:
 					data = self.connections[i].recv(1024)
 

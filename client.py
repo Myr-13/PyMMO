@@ -11,7 +11,7 @@ import netclient
 colorama.init(convert = True)
 
 class GameClient:
-	def __init__(self, debug = True):
+	def __init__(self, debug = False):
 		self.debug = debug
 		self.net_client = netclient.NetClient()
 		self.text = ""
