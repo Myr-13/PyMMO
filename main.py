@@ -1,4 +1,4 @@
-import server
+from server.server import Server
 from client.client import GameClient
 
 import sys
@@ -18,8 +18,8 @@ for arg in argv:
 		console = True
 
 if type == "server":
-	sv = server.Server()
-	sv.Run(3030)
+	sv = Server()
+	sv.run(3030)
 else:
 	cl = GameClient(debug, not console)
 	cl.Run()
