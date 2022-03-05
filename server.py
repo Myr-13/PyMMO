@@ -1,63 +1,68 @@
+from logging.logging import Logger
+from logging.console_logging import ConsoleLogger
 from socket import socket
 import threading as th
 
-from .logging.logging import Logger
 
 class Server():
+	# For vscode
 	connections: list
 	addresses: list
+
+	is_running: bool
 
 	socket: socket
 	logger: Logger
 
 	def __init__(self):
 		self.socket = socket()
+		self.logger = ConsoleLogger()
 
 		self.addresses = []
 		self.connections = []
 
 	def Run(self, port: int):
-		self.connections_loop()
+		self.is_running = True
+
+		self.socket.bind(("", port))
+		self.socket.listen(1)
+
+		self.connections_loop_start()
+		self.main_loop_start()
+
+	def main_loop_start(self):
+		thread = th.Thread(target=self.main_loop)
+		thread.start()
+
+	def main_loop(self):
+		while self.is_running:
+			for i in range(len(self.connections)):
+				try:
+					data = self.connections[i].recv(1024)
+
+					if not data:
+						continue
+					
+					string = data.decode()
+					print("From {address} resolved: {text}".format(address = self.addresses[i], text = string))
+				except:
+					try:
+						self.connections.pop(i)
+						self.addresses.pop(i)
+					except:
+						pass
+
+					self.logger.log("User disconnected")
+
+	def connections_loop_start(self):
+		thread = th.Thread(target=self.connections_loop)
+		thread.start()
 
 	def connections_loop(self):
-		pass
+		while self.is_running:
+			connection, address = self.socket.accept()
 
-sock = socket.socket()
+			self.addresses.append(address)
+			self.connections.append(connection)
 
-conns = []
-addrs = []
-
-def AcceptConnections():
-	while True:
-		conn, addr = sock.accept()
-
-		print("New connections from: {}".format(addr))
-
-		conns.append(conn)
-		addrs.append(addr)
-
-def RunServer(port):
-	sock.bind(("", port))
-	sock.listen(1)
-
-	listener = th.Thread(target = AcceptConnections)
-	listener.start()
-
-	while True:
-		for i in range(len(conns)):
-			try:
-				data = conns[i].recv(1024)
-
-				if not data:
-					continue
-
-				print("Send to {addr} : {text}".format(addr = addrs[i], text = data.decode()))
-				conns[i].send(data.upper())
-			except:
-				try:
-					conns.pop(i)
-					addrs.pop(i)
-				except:
-					pass
-
-				print("User disconnected")
+			self.logger.log("New connections from: {}".format(address))
