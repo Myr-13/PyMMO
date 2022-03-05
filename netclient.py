@@ -12,3 +12,6 @@ class NetClient:
 
 	def Send(self, text):
 		self.sock.send(text)
+
+	def Close(self):
+		self.sock.close()

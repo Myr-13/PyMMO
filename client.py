@@ -1,29 +1,29 @@
-from distutils.log import Log
-from colorama import Fore
-import threading as th
-import keyboard as kb
-import datetime
-import colorama
-
+from logging.console_logging import ConsoleLogger
 import netclient
+import protocol
+from utilsclient import *
+
+import threading as th
+import sys
+import os
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide" # Disable this fucking pygame support message
+import pygame
 
 # Initing modules
-colorama.init(convert = True)
+pygame.init()
 
 class GameClient:
-	def __init__(self, debug = True):
+	def __init__(self, debug = True, winmode = True):
 		self.debug = debug
+		self.logger = ConsoleLogger()
+
 		self.net_client = netclient.NetClient()
-		self.text = ""
 
-	def Log(self, text):
-		print(Fore.WHITE + "[{time}][LOG]: {text}".format(time = datetime.datetime.now().strftime("%H:%M:%S"), text = text))
-
-	def LogWarn(self, text):
-		print(Fore.YELLOW + "[{time}][WARN]: {text}".format(time = datetime.datetime.now().strftime("%H:%M:%S"), text = text))
-
-	def LogError(self, text):
-		print(Fore.RED + "[{time}][ERROR]: {text}".format(time = datetime.datetime.now().strftime("%H:%M:%S"), text = text))
+		self.winmode = winmode
+		if winmode:
+			self.win = pygame.display.set_mode((1200, 720))
+		self.fpslock = 60
+		self.fpsclock = pygame.time.Clock()
 
 	def OnKeyEvent(self, event):
 		if event.event_type == "down":
@@ -39,24 +39,54 @@ class GameClient:
 		if data:
 			print("[SERVER]: " + data.decode())
 
+	def RunNetLoop(self):
+		while True:
+			self.OnNetTick()
+
 	def OnTick(self):
-		self.OnNetTick()
+		self.OnRender()
+
+	def OnRender(self):
+		self.win.fill(COLOR_BLACK)
+		# Drawing here xd
+
+		pygame.draw.rect(self.win, COLOR_WHITE, (0, 0, 20, 20))
+
+		# Drawing not here xd
+		pygame.display.update()
 
 	def RunMain(self):
 		while True:
 			self.OnTick()
 
-	def OnRun(self):
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					self.OnShutdown()
+
+	def Run(self):
 		# Init keyboard input
-		if self.debug:
-			self.Log("Initing keyboard...")
-		kb.hook(self.OnKeyEvent)
+		self.logger.log("Running client with graphics")
 
 		# Connection to server and send player info
 		if self.debug:
-			self.Log("Connecting to {addr}:{port}".format(addr = "localhost", port = 3030))
+			self.logger.log("Connecting to {addr}:{port}".format(addr = "localhost", port = 3030))
 		self.net_client.Connect("localhost", 3030)
 
 		# Main
-		a = th.Thread(target = self.RunMain)
-		a.start()
+		if self.debug:
+			self.logger.log("Running main loop")
+		self.RunMain()
+
+	def OnShutdown(self):
+		if self.debug:
+			self.logger.log("Shuting down client")
+
+		if self.debug:
+			self.logger.log("Send disconnect packet")
+		self.net_client.Send(protocol.NetPack_PlayerDisconnect().Pack()) # Send disconnect packet
+		if self.debug:
+			self.logger.log("Closing connection")
+		self.net_client.Close() # Closing socket
+		
+		pygame.quit() # Closing pygame
+		sys.exit() # Выйди нахуй блять
