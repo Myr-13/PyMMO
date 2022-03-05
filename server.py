@@ -1,5 +1,26 @@
-import socket
+from socket import socket
 import threading as th
+
+from .logging.logging import Logger
+
+class Server():
+	connections: list
+	addresses: list
+
+	socket: socket
+	logger: Logger
+
+	def __init__(self):
+		self.socket = socket()
+
+		self.addresses = []
+		self.connections = []
+
+	def Run(self, port: int):
+		self.connections_loop()
+
+	def connections_loop(self):
+		pass
 
 sock = socket.socket()
 
