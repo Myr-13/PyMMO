@@ -11,17 +11,19 @@ class Server():
 
 	is_running: bool
 
-	socket: socket
 	logger: Logger
 
-	def __init__(self):
+	def __init__(self, debug = False):
 		self.socket = socket()
 		self.logger = ConsoleLogger()
+		self.debug = debug
 
 		self.addresses = []
 		self.connections = []
 
 	def Run(self, port: int):
+		if self.socket:
+			self.logger.log("Starting server on port {0}".format(port))
 		self.is_running = True
 
 		self.socket.bind(("", port))
