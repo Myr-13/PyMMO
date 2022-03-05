@@ -1,16 +1,10 @@
 from logging.console_logging import ConsoleLogger
-import netclient
+import client.netclient as netclient
 import protocol
-from utilsclient import *
+from client.utilsclient import *
 
 import threading as th
 import sys
-import os
-os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide" # Disable this fucking pygame support message
-import pygame
-
-# Initing modules
-pygame.init()
 
 class GameClient:
 	def __init__(self, debug = True, winmode = True):
@@ -18,19 +12,6 @@ class GameClient:
 		self.logger = ConsoleLogger()
 
 		self.net_client = netclient.NetClient()
-
-		self.winmode = winmode
-		if winmode:
-			self.win = pygame.display.set_mode((1200, 720))
-		self.fpslock = 60
-		self.fpsclock = pygame.time.Clock()
-
-	def OnKeyEvent(self, event):
-		if event.event_type == "down":
-			if event.name == "enter":
-				self.net_client.Send(str.encode(self.text))
-			else:
-				self.text += event.name
 
 	def OnNetTick(self):
 		# Recv
@@ -46,22 +27,15 @@ class GameClient:
 	def OnTick(self):
 		self.OnRender()
 
+		# Fps lock
+		self.fpsclock.tick(self.fpslock)
+
 	def OnRender(self):
-		self.win.fill(COLOR_BLACK)
-		# Drawing here xd
-
-		pygame.draw.rect(self.win, COLOR_WHITE, (0, 0, 20, 20))
-
-		# Drawing not here xd
-		pygame.display.update()
+		pass
 
 	def RunMain(self):
 		while True:
 			self.OnTick()
-
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					self.OnShutdown()
 
 	def Run(self):
 		# Init keyboard input
@@ -88,5 +62,4 @@ class GameClient:
 			self.logger.log("Closing connection")
 		self.net_client.Close() # Closing socket
 		
-		pygame.quit() # Closing pygame
 		sys.exit() # Выйди нахуй блять
