@@ -26,7 +26,7 @@ class NetServer:
 	def close(self):
 		self.socket.close()
 
-	def kick(self, id):
+	def disconnect(self, id):
 		self.connections.pop(id)
 		self.addresses.pop(id)
 
