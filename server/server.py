@@ -1,26 +1,31 @@
 from logging.logging import Logger
 from logging.console_logging import ConsoleLogger
-
-from socket import socket
 import threading as th
 
-from server.netserver import NetServer
+from server.net.netserver import NetServer
+from server.parser import Parser
 
 BUFFER_SIZE = 1024
 
 class Server():
-	# For vscode
 	is_running: bool
 	debug: bool
 
 	logger: Logger
 	netserver: NetServer
 
+	parser: Parser
+
 	def __init__(self, debug = False):
-		self.logger = ConsoleLogger()
-		self.netserver = NetServer(self.logger)
 		self.debug = debug
 
+		self.logger = ConsoleLogger()
+		self.netserver = NetServer(self.logger)
+		self.parser = Parser(self, self.logger)
+
+		self.logger.warn("1")
+		self.logger.error("2")
+		
 	def run(self, port: int):
 		self.is_running = True
 
@@ -50,16 +55,12 @@ class Server():
 						continue
 
 					string = str(data, 'utf8')
-					print("From {address} resolved: {text}\nWith size: {size}".format(address = self.netserver.addresses[i], text = string, size = len(data)))
-
-					sp = string.split("|")
-					if sp[0] == "1":
-						self.netserver.kick(i)
-
-						self.logger.log("User disconnected")
+					
+					self.parser.parse(string)
+					# print("From {address} resolved: {text}\nWith size: {size}".format(address = self.netserver.addresses[i], text = string, size = len(data)))
 				except:
 					try:
-						self.netserver.kick(i)
+						self.netserver.disconnect(i)
 					except:
 						pass
 
@@ -72,3 +73,6 @@ class Server():
 	def connections_loop(self):
 		while self.is_running:
 			self.netserver.accept()
+
+	def disconnect(self, id):
+		self.netserver.disconnect(id)

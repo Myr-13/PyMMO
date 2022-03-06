@@ -2,6 +2,9 @@
 # DONT TOUCH ANY LINES HERE
 #
 
+# Consts
+PACKET_DELEMITER = "|"
+
 # Enums xd
 # NetPack types
 NETPACK_TYPE_PLAYERCONNECT = 0
