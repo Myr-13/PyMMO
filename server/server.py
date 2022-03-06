@@ -2,7 +2,7 @@ from logging.logging import Logger
 from logging.console_logging import ConsoleLogger
 import threading as th
 
-from server.netserver import NetServer
+from server.net.netserver import NetServer
 from server.parser import Parser
 
 BUFFER_SIZE = 1024
@@ -17,11 +17,15 @@ class Server():
 	parser: Parser
 
 	def __init__(self, debug = False):
+		self.debug = debug
+
 		self.logger = ConsoleLogger()
 		self.netserver = NetServer(self.logger)
-		self.debug = debug
-		self.parser = Parser()
+		self.parser = Parser(self, self.logger)
 
+		self.logger.warn("1")
+		self.logger.error("2")
+		
 	def run(self, port: int):
 		self.is_running = True
 
