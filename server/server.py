@@ -41,18 +41,21 @@ class Server():
 		while self.is_running:
 			for i in range(len(self.netserver.connections)):
 				try:
-					data = bytearray()
+					'''data = bytearray()
 
 					while True:
 						chunk = self.netserver.recive(i, BUFFER_SIZE)
 						if not chunk:
 							break
-						data += chunk
+						data += chunk'''
+					
+					data = self.netserver.recive(i, BUFFER_SIZE)
 					
 					if not data or len(data) == 0:
 						continue
 
 					string = str(data, 'utf8')
+					
 					self.parser.parse(string)
 					# print("From {address} resolved: {text}\nWith size: {size}".format(address = self.netserver.addresses[i], text = string, size = len(data)))
 				except:
