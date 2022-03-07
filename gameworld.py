@@ -6,8 +6,10 @@ class Entity:
 		self.type = ""
 		self.server = server
 
-	def NetworkClipped(self, pos):
-		pass
+	def NetworkClipped(self, pos : vec2) -> bool:
+		if distance(pos, self.pos) < 1000:
+			return True
+		return False
 
 	def NetTick(self, client_id):
 		pass
