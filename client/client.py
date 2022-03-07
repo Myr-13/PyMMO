@@ -73,6 +73,9 @@ class GameClient:
 		# Starting net
 		self.RunNetLoop()
 
+		# Components
+		self.menus.in_game = True
+
 	def Disconnect(self):
 		if self.debug:
 			self.logger.log("Send disconnect packet")
@@ -84,6 +87,7 @@ class GameClient:
 		self.state = CLIENT_STATE_INMENUS
 		self.ui.ClearButtons()
 		self.menus.pause = False
+		self.menus.in_game = False
 		self.menus.CreateBaseMenu()
 
 	# ===> Main

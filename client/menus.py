@@ -17,12 +17,15 @@ class Menus:
 			if state == 1: # if state == CLIENTSTATE_INGAME
 				self.pause = not self.pause
 
-				self.ui.CreateButton((self.win.get_width() - 120, 20), (100, 35), COLOR_WHITE, self.disconnect_func)
+				if self.pause:
+					self.ui.CreateButton((self.win.get_width() - 120, 20), (100, 35), COLOR_GREY_BUTTON, self.disconnect_func)
+				else:
+					self.ui.ClearButtons()
 
 	# ===> Base
 	def CreateBaseMenu(self):
-		self.ui.CreateButton((20, 20), (120, 35), COLOR_WHITE, self.play_func)
-		self.ui.CreateButton((20, 70), (120, 35), COLOR_WHITE, self.exit_func)
+		self.ui.CreateButton((20, 20), (120, 35), COLOR_GREY_BUTTON, self.play_func)
+		self.ui.CreateButton((20, 70), (120, 35), COLOR_GREY_BUTTON, self.exit_func)
 
 	def OnInit(self, play_func, exit_func, disconnect_func):
 		self.play_func = play_func
@@ -35,7 +38,12 @@ class Menus:
 		self.ui.OnTick()
 
 	def OnRender(self):
-		self.ui.OnRender()
-
+		# Ingame
 		if self.pause:
 			rect_trans(self.win, (100, 100, 100, 150), 0, 0, self.win.get_width(), 100)
+		
+		# Inmenu
+		if not self.in_game:
+			self.win.fill((172, 207, 225))
+
+		self.ui.OnRender()

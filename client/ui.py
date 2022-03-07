@@ -1,8 +1,4 @@
-import os
-os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
-import pygame
-
-pygame.init()
+from client.backend_render import *
 
 class Button:
 	def __init__(self, x, y, w, h, color, func):
@@ -15,7 +11,7 @@ class Button:
 		self.mouse_hold = False
 
 class UI:
-	def __init__(self, win : pygame.Surface):
+	def __init__(self, win):
 		self.win = win
 		self.buttons = []
 
@@ -45,4 +41,4 @@ class UI:
 
 	def OnRender(self):
 		for button in self.buttons:
-			pygame.draw.rect(self.win, button.color, (button.x, button.y, button.w, button.h))
+			rect_trans(self.win, button.color, button.x, button.y, button.w, button.h)
