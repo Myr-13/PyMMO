@@ -19,7 +19,7 @@ class NetPack_PlayerConnect:
 		self.name = ""
 		
 	def Pack(self):
-		data = "{0}|{1}∉".format(self.type, self.name)
+		data = "{0}|{1}`".format(self.type, self.name)
 
 		return str.encode(data)
 
@@ -28,7 +28,7 @@ class NetPack_PlayerDisconnect:
 		self.type = NETPACK_TYPE_PLAYERDISCONNECT
 
 	def Pack(self):
-		data = "{0}∉".format(self.type)
+		data = "{0}`".format(self.type)
 
 		return str.encode(data)
 
@@ -39,7 +39,7 @@ class NetPack_PlayerChat:
 		self.text = ""
 	
 	def Pack(self):
-		data = "{0}|{1}|{2}∉".format(self.type, self.player, self.text)
+		data = "{0}|{1}|{2}`".format(self.type, self.player, self.text)
 
 		return str.encode(data)
 
@@ -52,6 +52,6 @@ class NetPack_PlayerInput:
 		self.mouse_y = 0
 
 	def Pack(self):
-		data = "{0}|{1}|{2}|{3}|{4}∉".format(self.type, self.jump, self.move_dir, self.mouse_x, self.mouse_y)
+		data = "{0}|{1}|{2}|{3}|{4}`".format(self.type, self.jump, self.move_dir, self.mouse_x, self.mouse_y)
 
 		return str.encode(data)
