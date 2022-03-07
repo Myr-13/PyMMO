@@ -22,9 +22,6 @@ class Server():
 		self.logger = ConsoleLogger()
 		self.netserver = NetServer(self.logger)
 		self.parser = Parser(self, self.logger)
-
-		self.logger.warn("1")
-		self.logger.error("2")
 		
 	def run(self, port: int):
 		self.is_running = True
@@ -41,18 +38,23 @@ class Server():
 		while self.is_running:
 			for i in range(len(self.netserver.connections)):
 				try:
-					'''data = bytearray()
+					data = bytearray()
 
 					while True:
 						chunk = self.netserver.recive(i, BUFFER_SIZE)
 						if not chunk:
 							break
-						data += chunk'''
-					
-					data = self.netserver.recive(i, BUFFER_SIZE)
-					
+						data += chunk
+						print(data[-3:-1: 1].decode())
+
+						if data[-4:-1: 1].decode() == "\xe2\x88\x89":
+							print("ended")
+							break
+
 					if not data or len(data) == 0:
 						continue
+					
+					print(data)
 
 					string = str(data, 'utf8')
 					
