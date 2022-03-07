@@ -21,3 +21,18 @@ class GameWorld:
 
 	def LoadFromFile(self, file_path):
 		pass
+
+	def GetCharacters(self):
+		chrs = []
+		for ent in self.entities:
+			if ent.type == "character":
+				chrs.append(ent)
+
+		return chrs
+
+	# ===> Base
+	def OnTick(self):
+		pass
+
+	def OnNetTick(self):
+		pass

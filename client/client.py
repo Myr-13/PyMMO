@@ -1,5 +1,5 @@
 from logging.console_logging import ConsoleLogger
-import client.netclient as netclient
+from client.netclient import NetClient
 import protocol
 from client.utilsclient import *
 from client.controls import Controls
@@ -10,7 +10,6 @@ import threading as th
 import os
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 import pygame
-import sys
 
 # Initing modules
 pygame.init()
@@ -21,8 +20,10 @@ CLIENT_STATE_INGAME = 1
 
 class GameClient:
 	def __init__(self, debug = True):
+		# Base
 		self.debug = debug
 		self.state = CLIENT_STATE_INMENUS
+		self.close = False
 
 		# Display
 		self.win = pygame.display.set_mode((1200, 720))
@@ -34,18 +35,19 @@ class GameClient:
 		self.ui = UI(self.win)
 		self.menus = Menus(self.win, self.ui)
 		self.logger = ConsoleLogger()
-
-		self.net_client = netclient.NetClient()
+		
+		self.net_thread = 0
 
 	# ===> Network
 	def RecieveNetData(self):
 		while True:
 			data = None
+
 			# Recv
 			try:
 				data = self.net_client.Recv()
 			except:
-				self.logger.warn("Not recv data")
+				break
 
 			if data:
 				print("[SERVER]: " + data.decode())
@@ -56,14 +58,33 @@ class GameClient:
 		pass
 
 	def RunNetLoop(self):
-		a = th.Thread(target = self.RecieveNetData)
-		a.start()
+		self.net_thread = th.Thread(target = self.RecieveNetData)
+		self.net_thread.start()
 
 	def Connect(self, ip, port):
+		# Again init socket ._.
+		self.net_client = NetClient()
+
 		# Connection to server and send player info
 		if self.debug:
 			self.logger.log("Connecting to {addr}:{port}".format(addr = ip, port = port))
 		self.net_client.Connect(ip, port)
+
+		# Starting net
+		self.RunNetLoop()
+
+	def Disconnect(self):
+		if self.debug:
+			self.logger.log("Send disconnect packet")
+		self.net_client.Send(protocol.NetPack_PlayerDisconnect().Pack()) # Send disconnect packet
+		if self.debug:
+			self.logger.log("Closing connection")
+		self.net_client.Close() # Closing socket
+
+		self.state = CLIENT_STATE_INMENUS
+		self.ui.ClearButtons()
+		self.menus.pause = False
+		self.menus.CreateBaseMenu()
 
 	# ===> Main
 	def OnTick(self):
@@ -87,15 +108,16 @@ class GameClient:
 		pygame.display.update()
 
 	def RunMain(self):
-		# Starting net
-		self.RunNetLoop()
-
-		while True:
+		while not self.close:
 			self.OnTick()
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
-					self.OnShutdown()
+					self.close = True
+				if event.type == pygame.KEYDOWN:
+					self.menus.OnInput(event.key, self.state)
+
+		self.OnShutdown()
 
 	# ===> Run & Shutdown
 	def Run(self):
@@ -112,8 +134,10 @@ class GameClient:
 			self.Connect("localhost", 3030)
 			self.state = CLIENT_STATE_INGAME
 			self.ui.ClearButtons()
+		def OnCloseButton():
+			self.close = True
 
-		self.menus.OnInit(OnPlayButton, self.OnShutdown)
+		self.menus.OnInit(OnPlayButton, OnCloseButton, self.Disconnect)
 
 		# > Main
 		if self.debug:
@@ -125,12 +149,6 @@ class GameClient:
 			self.logger.log("Shuting down client")
 
 		if self.state == CLIENT_STATE_INGAME:
-			if self.debug:
-				self.logger.log("Send disconnect packet")
-			self.net_client.Send(protocol.NetPack_PlayerDisconnect().Pack()) # Send disconnect packet
-			if self.debug:
-				self.logger.log("Closing connection")
-			self.net_client.Close() # Closing socket
-		
+			self.Disconnect()
+
 		pygame.quit()
-		sys.exit() # Выйди нахуй блять

@@ -20,3 +20,5 @@ if type == "server":
 else:
 	cl = GameClient(debug)
 	cl.Run()
+
+sys.exit()
