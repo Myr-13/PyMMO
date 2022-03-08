@@ -55,3 +55,26 @@ class NetPack_PlayerInput:
 		data = "{0}|{1}|{2}|{3}|{4}`".format(self.type, self.jump, self.move_dir, self.mouse_x, self.mouse_y)
 
 		return str.encode(data)
+
+class NetPack_EntityProjictile:
+	def __init__(self):
+		self.x = 0
+		self.y = 0
+		self.type = "none"
+
+	def Pack(self):
+		data = "{0}|{1}|{2}`".format(self.x, self.y, self.type)
+
+		return str.encode(data)
+
+class NetPack_EntityCharacter:
+	def __init__(self):
+		self.x = 0
+		self.y = 0
+		self.ang = 0
+		self.skin = "none"
+	
+	def Pack(self):
+		data = "{0}|{1}|{2}|{3}`".format(self.x, self.y, self.ang, self.skin)
+
+		return str.encode(data)

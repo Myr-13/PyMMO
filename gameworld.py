@@ -1,18 +1,20 @@
 from vmath import *
 
 class Entity:
-	def __init__(self, server, x = 0, y = 0):
+	def __init__(self, world, x = 0, y = 0):
 		self.pos = vec2(x = x, y = y)
 		self.type = ""
-		self.server = server
+		self.world = world
 
 	def NetworkClipped(self, pos : vec2) -> bool:
 		if distance(pos, self.pos) < 1000:
 			return True
 		return False
 
-	def NetTick(self, client_id):
-		pass
+	def NetTick(self, net):
+		for ent in self.world.GetCharacters():
+			if not self.NetworkClipped(ent.pos):
+				continue
 
 class GameWorld:
 	def __init__(self):
@@ -34,5 +36,7 @@ class GameWorld:
 	def OnTick(self):
 		pass
 
-	def OnNetTick(self):
-		pass
+	def OnNetTick(self, net_server):
+		for conn in net_server.connections:
+			for ent in self.entities:
+				ent.NetTick(conn)
