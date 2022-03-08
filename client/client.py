@@ -5,6 +5,8 @@ from client.utilsclient import *
 from client.controls import Controls
 from client.ui import UI
 from client.menus import Menus
+from gameworld import GameWorld
+from client.gamerenderer import GameRenderer
 
 import threading as th
 import os
@@ -35,6 +37,7 @@ class GameClient:
 		self.ui = UI(self.win)
 		self.menus = Menus(self.win, self.ui)
 		self.logger = ConsoleLogger()
+		self.renderer = GameRenderer(self.win)
 		
 		self.net_thread = 0
 
@@ -75,6 +78,11 @@ class GameClient:
 
 		# Components
 		self.menus.in_game = True
+		self.world = GameWorld()
+
+		self.world.LoadFromFile("maps/spring.pymap")
+
+		print(self.world.tiles, self.world.wight, self.world.height)
 
 	def Disconnect(self):
 		if self.debug:
@@ -107,6 +115,8 @@ class GameClient:
 
 		# Render components
 		self.menus.OnRender()
+		if self.state == CLIENT_STATE_INGAME:
+			self.renderer.OnRender(self.world)
 
 		# Draw your fucking graphic NOT here
 		pygame.display.update()
