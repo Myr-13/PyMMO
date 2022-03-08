@@ -1,11 +1,18 @@
 from socket import socket
+from time import sleep
 
 NETPACK_TYPE_PLAYERDISCONNECT = 1
 
-sock = socket()
-sock.connect(("localhost", 3030))
+def main():
+	sock = socket()
+	sock.connect(("localhost", 3030))
 
-sock.send(str.encode(str(NETPACK_TYPE_PLAYERDISCONNECT) + "|Hello∉"))
+	sock.send(str.encode("0`"))
+	sock.send(str.encode("1`"))
+	
+	data = sock.recv(1024).decode()
+	print(data)
 
-sock.close()
-input()
+	sock.close()
+
+main()

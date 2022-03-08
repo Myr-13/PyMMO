@@ -1,8 +1,10 @@
 from logging.logging import Logger
 from logging.console_logging import ConsoleLogger
 import threading as th
+from server.GLOBAL import PACK_END
 
 from server.net.netserver import NetServer
+from server.net.netconnection import NetConnection
 from server.parser import Parser
 
 BUFFER_SIZE = 1024
@@ -13,7 +15,6 @@ class Server():
 
 	logger: Logger
 	netserver: NetServer
-
 	parser: Parser
 
 	def __init__(self, debug = False):
@@ -21,7 +22,7 @@ class Server():
 
 		self.logger = ConsoleLogger()
 		self.netserver = NetServer(self.logger)
-		self.parser = Parser(self, self.logger)
+		self.parser = Parser(self.logger)
 		
 	def run(self, port: int):
 		self.is_running = True
@@ -36,37 +37,21 @@ class Server():
 
 	def main_loop(self):
 		while self.is_running:
-			for i in range(len(self.netserver.connections)):
+			for connection in list(self.netserver.connections.values()):
+				connection: NetConnection = connection
+				data = bytearray()
+
 				try:
-					data = bytearray()
-
-					while True:
-						chunk = self.netserver.recive(i, BUFFER_SIZE)
-						if not chunk:
-							break
-						data += chunk
-						print(data[-3:-1: 1].decode())
-
-						if data[-4:-1: 1].decode() == "\xe2\x88\x89":
-							print("ended")
-							break
-
-					if not data or len(data) == 0:
-						continue
-					
-					print(data)
-
-					string = str(data, 'utf8')
-					
-					self.parser.parse(string)
-					# print("From {address} resolved: {text}\nWith size: {size}".format(address = self.netserver.addresses[i], text = string, size = len(data)))
+					data = connection.recive_all(PACK_END, 1)
 				except:
-					try:
-						self.netserver.disconnect(i)
-					except:
-						pass
-
-					self.logger.log("User disconnected")
+					connection.disconnect()
+					continue
+				
+				if not data or len(data) == 0:
+					continue
+				
+				string = str(data, 'utf8')[:-len(PACK_END)]
+				self.parser.parse(connection, string)
 
 	def connections_loop_start(self):
 		thread = th.Thread(target=self.connections_loop)
@@ -75,6 +60,3 @@ class Server():
 	def connections_loop(self):
 		while self.is_running:
 			self.netserver.accept()
-
-	def disconnect(self, id):
-		self.netserver.disconnect(id)
